@@ -23,16 +23,24 @@ export async function POST(req: NextRequest) {
       promptQuery = body.message || '';
     }
 
-    const systemInstruction = `You are a concise Agronomic Field Analyst for the Hassan District Ginger Cultivation Study. Provide direct, high-impact agronomic and financial insights. Strictly keep answers under 3-4 bullet points or 150 words. Avoid formal letter intros or memorandums.`;
+    const systemInstruction = `You are a concise Agronomic Field Analyst for the Hassan District Ginger Cultivation Study (Tissue Culture vs Conventional Rhizomes). Provide direct, high-impact agronomic and financial insights. Strictly keep answers under 3-4 bullet points or 150 words. Avoid formal letter intros.`;
 
-    // Direct REST call supporting both AQ. and AIza keys
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const isBearerToken = apiKey.startsWith('AQ.');
+    const apiUrl = isBearerToken
+      ? 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+      : `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (isBearerToken) {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    }
 
     const res = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         contents: [
           {
@@ -57,7 +65,7 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       console.error('Gemini REST API Error:', data);
-      return new Response(data?.error?.message || 'API call failed', {
+      return new Response(data?.error?.message || 'API authentication failed', {
         status: res.status,
         headers: { 'Content-Type': 'text/plain; charset=utf-8' },
       });
