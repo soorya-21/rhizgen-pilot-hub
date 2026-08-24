@@ -25,22 +25,14 @@ export async function POST(req: NextRequest) {
 
     const systemInstruction = `You are a concise Agronomic Field Analyst for the Hassan District Ginger Cultivation Study (Tissue Culture vs Conventional Rhizomes). Provide direct, high-impact agronomic and financial insights. Strictly keep answers under 3-4 bullet points or 150 words. Avoid formal letter intros.`;
 
-    const isBearerToken = apiKey.startsWith('AQ.');
-    const apiUrl = isBearerToken
-      ? 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
-      : `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-
-    if (isBearerToken) {
-      headers['Authorization'] = `Bearer ${apiKey}`;
-    }
+    const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
     const res = await fetch(apiUrl, {
       method: 'POST',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
       body: JSON.stringify({
         contents: [
           {
