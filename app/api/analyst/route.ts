@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,19 +14,19 @@ export async function POST(req: NextRequest) {
 
     const { message, trialContext } = await req.json();
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+    const ai = new GoogleGenAI({ apiKey });
 
     const systemPrompt = `You are the Lead Agronomic Economist and Field Trial Analyst for the Hassan District Ginger Cultivation Study (Tissue Culture vs Conventional Rhizomes).
 Analyze trial metrics, yields, disease resistance, and farmer economics with accurate, concise agronomic reasoning.
 
 ${trialContext ? `Live Hassan Trial Dataset:\n${JSON.stringify(trialContext, null, 2)}` : ''}`;
 
-    const prompt = `${systemPrompt}\n\nOfficer Inquiry: ${message}`;
-    const result = await model.generateContent(prompt);
-    const reply = result.response.text();
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `${systemPrompt}\n\nOfficer Inquiry: ${message}`,
+    });
 
-    return NextResponse.json({ reply });
+    return NextResponse.json({ reply: response.text });
   } catch (error: any) {
     console.error('Gemini Analyst Error:', error);
     return NextResponse.json(
